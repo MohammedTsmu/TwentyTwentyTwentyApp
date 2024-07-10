@@ -9,6 +9,7 @@
         private System.Windows.Forms.Button btnSettings;
         private System.Windows.Forms.ProgressBar progressBarBreak;
         private System.Windows.Forms.Label lblBreaksTaken;
+        private System.Windows.Forms.Label lblTotalBreakTime;
 
         protected override void Dispose(bool disposing)
         {
@@ -26,6 +27,7 @@
             this.btnSettings = new System.Windows.Forms.Button();
             this.progressBarBreak = new System.Windows.Forms.ProgressBar();
             this.lblBreaksTaken = new System.Windows.Forms.Label();
+            this.lblTotalBreakTime = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblInstruction
@@ -74,11 +76,21 @@
             this.lblBreaksTaken.TabIndex = 4;
             this.lblBreaksTaken.Text = "عدد فترات الراحة التي تم أخذها: 0";
             // 
+            // lblTotalBreakTime
+            // 
+            this.lblTotalBreakTime.AutoSize = true;
+            this.lblTotalBreakTime.Location = new System.Drawing.Point(10, 160);
+            this.lblTotalBreakTime.Name = "lblTotalBreakTime";
+            this.lblTotalBreakTime.Size = new System.Drawing.Size(122, 13);
+            this.lblTotalBreakTime.TabIndex = 5;
+            this.lblTotalBreakTime.Text = "إجمالي وقت الراحة: 0 دقائق";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 161);
+            this.ClientSize = new System.Drawing.Size(384, 181);
+            this.Controls.Add(this.lblTotalBreakTime);
             this.Controls.Add(this.lblBreaksTaken);
             this.Controls.Add(this.progressBarBreak);
             this.Controls.Add(this.btnSettings);

@@ -20,20 +20,24 @@ namespace TwentyTwentyTwentyApp
         private string breakBackgroundImage = null;
         private string breakSoundFile = null;
         private int breaksTaken = 0;
+        private int totalBreakTime = 0; // إجمالي وقت الراحة بالثواني
         private bool autoStart = false;
         private Form fullScreenForm;
         private WaveOutEvent waveOut;
         private AudioFileReader audioFileReader;
         private const string SettingsFilePath = "settings.json";
         private const string AutoStartRegistryKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
+        private Statistics statistics;
 
         public Form1()
         {
             InitializeComponent();
             LoadSettings();
+            statistics = Statistics.LoadStatistics();
             InitializeBreakTimer();
             ApplyTheme();
             SetAutoStart(autoStart);
+            UpdateStatistics();
         }
 
         private void InitializeBreakTimer()
@@ -81,7 +85,9 @@ namespace TwentyTwentyTwentyApp
             {
                 FormBorderStyle = FormBorderStyle.None,
                 WindowState = FormWindowState.Maximized,
-                BackColor = nightMode ? ThemeColors.NightBackgroundColor : Color.White
+                BackColor = nightMode ? ThemeColors.NightBackgroundColor : Color.White,
+                TopMost = true,
+                ShowInTaskbar = false
             };
 
             if (!string.IsNullOrEmpty(breakBackgroundImage) && File.Exists(breakBackgroundImage))
@@ -103,6 +109,8 @@ namespace TwentyTwentyTwentyApp
             fullScreenForm.Controls.Add(lblBreak);
             fullScreenForm.Show();
 
+            BlockInput(true); // تعطيل استخدام لوحة المفاتيح والفأرة
+
             if (!string.IsNullOrEmpty(breakSoundFile) && File.Exists(breakSoundFile))
             {
                 PlaySound(breakSoundFile);
@@ -110,18 +118,7 @@ namespace TwentyTwentyTwentyApp
 
             await Task.Delay(breakDuration * 1000); // الانتظار لمدة مدة الراحة
 
-            StopSound();
-
-            fullScreenForm.Close();
-            this.Show();
-
-            if (enableNotifications)
-            {
-                MessageBox.Show("تم الانتهاء من فترة الراحة.", "نهاية الراحة", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-
-            breaksTaken++;
-            UpdateBreaksTaken();
+            StopBreak();
         }
 
         private void PlaySound(string fileName)
@@ -155,9 +152,36 @@ namespace TwentyTwentyTwentyApp
             }
         }
 
-        private void UpdateBreaksTaken()
+        private void StopBreak()
+        {
+            StopSound();
+
+            if (fullScreenForm != null)
+            {
+                fullScreenForm.Close();
+                fullScreenForm = null;
+            }
+
+            BlockInput(false); // إعادة تمكين استخدام لوحة المفاتيح والفأرة
+
+            this.Show();
+
+            if (enableNotifications)
+            {
+                MessageBox.Show("تم الانتهاء من فترة الراحة.", "نهاية الراحة", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            breaksTaken++;
+            totalBreakTime += breakDuration;
+            statistics.AddBreak();
+            UpdateStatistics();
+            SaveSettings();
+        }
+
+        private void UpdateStatistics()
         {
             lblBreaksTaken.Text = $"عدد فترات الراحة التي تم أخذها: {breaksTaken}";
+            lblTotalBreakTime.Text = $"إجمالي وقت الراحة: {totalBreakTime / 60} دقائق";
         }
 
         public void UpdateSettings(int newInterval, int newDuration, bool newEnableSound, bool newEnableNotifications, bool newNightMode, string newBreakBackgroundImage, string newBreakSoundFile, bool newAutoStart)
@@ -219,8 +243,9 @@ namespace TwentyTwentyTwentyApp
                 breakBackgroundImage = settings.BreakBackgroundImage;
                 breakSoundFile = settings.BreakSoundFile;
                 breaksTaken = settings.BreaksTaken;
+                totalBreakTime = settings.TotalBreakTime;
                 autoStart = settings.AutoStart;
-                UpdateBreaksTaken();
+                UpdateStatistics();
             }
         }
 
@@ -236,6 +261,7 @@ namespace TwentyTwentyTwentyApp
                 BreakBackgroundImage = breakBackgroundImage,
                 BreakSoundFile = breakSoundFile,
                 BreaksTaken = breaksTaken,
+                TotalBreakTime = totalBreakTime,
                 AutoStart = autoStart
             };
             var settingsJson = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -256,6 +282,9 @@ namespace TwentyTwentyTwentyApp
                 }
             }
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool BlockInput(bool fBlockIt);
     }
 
     public class Settings
@@ -268,6 +297,7 @@ namespace TwentyTwentyTwentyApp
         public string BreakBackgroundImage { get; set; }
         public string BreakSoundFile { get; set; }
         public int BreaksTaken { get; set; }
+        public int TotalBreakTime { get; set; } // إجمالي وقت الراحة بالثواني
         public bool AutoStart { get; set; }
     }
 

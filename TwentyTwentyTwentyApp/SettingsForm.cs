@@ -34,7 +34,7 @@ namespace TwentyTwentyTwentyApp
         {
             // إعدادات النموذج
             this.Text = "الإعدادات";
-            this.Size = new Size(400, 450);
+            this.Size = new Size(400, 500);
 
             Label lblBreakInterval = new Label
             {
