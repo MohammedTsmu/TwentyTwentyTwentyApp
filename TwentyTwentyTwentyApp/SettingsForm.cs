@@ -11,17 +11,19 @@ namespace TwentyTwentyTwentyApp
         private bool enableSound;
         private bool enableNotifications;
         private bool nightMode;
+        private bool autoStart;
         private string breakBackgroundImage;
         private string breakSoundFile;
         public event EventHandler<SettingsEventArgs> SettingsSaved;
 
-        public SettingsForm(int currentInterval, int currentDuration, bool currentEnableSound, bool currentEnableNotifications, bool currentNightMode, string currentBreakBackgroundImage, string currentBreakSoundFile)
+        public SettingsForm(int currentInterval, int currentDuration, bool currentEnableSound, bool currentEnableNotifications, bool currentNightMode, string currentBreakBackgroundImage, string currentBreakSoundFile, bool currentAutoStart)
         {
             breakInterval = currentInterval;
             breakDuration = currentDuration;
             enableSound = currentEnableSound;
             enableNotifications = currentEnableNotifications;
             nightMode = currentNightMode;
+            autoStart = currentAutoStart;
             breakBackgroundImage = currentBreakBackgroundImage;
             breakSoundFile = currentBreakSoundFile;
             InitializeComponent();
@@ -32,7 +34,7 @@ namespace TwentyTwentyTwentyApp
         {
             // إعدادات النموذج
             this.Text = "الإعدادات";
-            this.Size = new Size(400, 400);
+            this.Size = new Size(400, 450);
 
             Label lblBreakInterval = new Label
             {
@@ -86,24 +88,32 @@ namespace TwentyTwentyTwentyApp
                 Size = new Size(150, 20)
             };
 
+            CheckBox chkAutoStart = new CheckBox
+            {
+                Text = "تشغيل التطبيق تلقائيًا عند بدء تشغيل النظام",
+                Checked = autoStart,
+                Location = new Point(10, 160),
+                Size = new Size(250, 20)
+            };
+
             Label lblBreakBackgroundImage = new Label
             {
                 Text = "صورة خلفية فترة الراحة:",
-                Location = new Point(10, 160),
+                Location = new Point(10, 190),
                 Size = new Size(150, 20)
             };
 
             TextBox txtBreakBackgroundImage = new TextBox
             {
                 Text = breakBackgroundImage,
-                Location = new Point(150, 160),
+                Location = new Point(150, 190),
                 Size = new Size(150, 20)
             };
 
             Button btnBrowseImage = new Button
             {
                 Text = "استعراض...",
-                Location = new Point(310, 160),
+                Location = new Point(310, 190),
                 Size = new Size(75, 23)
             };
             btnBrowseImage.Click += (sender, e) =>
@@ -122,21 +132,21 @@ namespace TwentyTwentyTwentyApp
             Label lblBreakSoundFile = new Label
             {
                 Text = "ملف صوت فترة الراحة:",
-                Location = new Point(10, 190),
+                Location = new Point(10, 220),
                 Size = new Size(150, 20)
             };
 
             TextBox txtBreakSoundFile = new TextBox
             {
                 Text = breakSoundFile,
-                Location = new Point(150, 190),
+                Location = new Point(150, 220),
                 Size = new Size(150, 20)
             };
 
             Button btnBrowseSound = new Button
             {
                 Text = "استعراض...",
-                Location = new Point(310, 190),
+                Location = new Point(310, 220),
                 Size = new Size(75, 23)
             };
             btnBrowseSound.Click += (sender, e) =>
@@ -155,7 +165,7 @@ namespace TwentyTwentyTwentyApp
             Button btnSave = new Button
             {
                 Text = "حفظ",
-                Location = new Point(10, 230),
+                Location = new Point(10, 260),
                 Size = new Size(100, 30)
             };
             btnSave.Click += (sender, e) =>
@@ -167,6 +177,7 @@ namespace TwentyTwentyTwentyApp
                     EnableSound = chkEnableSound.Checked,
                     EnableNotifications = chkEnableNotifications.Checked,
                     NightMode = chkNightMode.Checked,
+                    AutoStart = chkAutoStart.Checked,
                     BreakBackgroundImage = txtBreakBackgroundImage.Text,
                     BreakSoundFile = txtBreakSoundFile.Text
                 });
@@ -181,6 +192,7 @@ namespace TwentyTwentyTwentyApp
             this.Controls.Add(chkEnableSound);
             this.Controls.Add(chkEnableNotifications);
             this.Controls.Add(chkNightMode);
+            this.Controls.Add(chkAutoStart);
             this.Controls.Add(lblBreakBackgroundImage);
             this.Controls.Add(txtBreakBackgroundImage);
             this.Controls.Add(btnBrowseImage);

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using NAudio.Wave;
 
@@ -19,10 +20,12 @@ namespace TwentyTwentyTwentyApp
         private string breakBackgroundImage = null;
         private string breakSoundFile = null;
         private int breaksTaken = 0;
+        private bool autoStart = false;
         private Form fullScreenForm;
         private WaveOutEvent waveOut;
         private AudioFileReader audioFileReader;
         private const string SettingsFilePath = "settings.json";
+        private const string AutoStartRegistryKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
 
         public Form1()
         {
@@ -30,6 +33,7 @@ namespace TwentyTwentyTwentyApp
             LoadSettings();
             InitializeBreakTimer();
             ApplyTheme();
+            SetAutoStart(autoStart);
         }
 
         private void InitializeBreakTimer()
@@ -55,7 +59,7 @@ namespace TwentyTwentyTwentyApp
         private void BtnSettings_Click(object sender, EventArgs e)
         {
             // فتح نافذة الإعدادات
-            SettingsForm settingsForm = new SettingsForm(breakInterval, breakDuration, enableSound, enableNotifications, nightMode, breakBackgroundImage, breakSoundFile)
+            SettingsForm settingsForm = new SettingsForm(breakInterval, breakDuration, enableSound, enableNotifications, nightMode, breakBackgroundImage, breakSoundFile, autoStart)
             {
                 Owner = this
             };
@@ -65,7 +69,7 @@ namespace TwentyTwentyTwentyApp
 
         private void OnSettingsSaved(object sender, SettingsEventArgs e)
         {
-            UpdateSettings(e.BreakInterval, e.BreakDuration, e.EnableSound, e.EnableNotifications, e.NightMode, e.BreakBackgroundImage, e.BreakSoundFile);
+            UpdateSettings(e.BreakInterval, e.BreakDuration, e.EnableSound, e.EnableNotifications, e.NightMode, e.BreakBackgroundImage, e.BreakSoundFile, e.AutoStart);
             SaveSettings();
         }
 
@@ -156,7 +160,7 @@ namespace TwentyTwentyTwentyApp
             lblBreaksTaken.Text = $"عدد فترات الراحة التي تم أخذها: {breaksTaken}";
         }
 
-        public void UpdateSettings(int newInterval, int newDuration, bool newEnableSound, bool newEnableNotifications, bool newNightMode, string newBreakBackgroundImage, string newBreakSoundFile)
+        public void UpdateSettings(int newInterval, int newDuration, bool newEnableSound, bool newEnableNotifications, bool newNightMode, string newBreakBackgroundImage, string newBreakSoundFile, bool newAutoStart)
         {
             breakInterval = newInterval;
             breakDuration = newDuration;
@@ -165,8 +169,10 @@ namespace TwentyTwentyTwentyApp
             nightMode = newNightMode;
             breakBackgroundImage = newBreakBackgroundImage;
             breakSoundFile = newBreakSoundFile;
+            autoStart = newAutoStart;
             breakTimer.Interval = breakInterval * 60 * 1000;
             ApplyTheme();
+            SetAutoStart(autoStart);
         }
 
         private void ApplyTheme()
@@ -213,6 +219,7 @@ namespace TwentyTwentyTwentyApp
                 breakBackgroundImage = settings.BreakBackgroundImage;
                 breakSoundFile = settings.BreakSoundFile;
                 breaksTaken = settings.BreaksTaken;
+                autoStart = settings.AutoStart;
                 UpdateBreaksTaken();
             }
         }
@@ -228,10 +235,26 @@ namespace TwentyTwentyTwentyApp
                 NightMode = nightMode,
                 BreakBackgroundImage = breakBackgroundImage,
                 BreakSoundFile = breakSoundFile,
-                BreaksTaken = breaksTaken
+                BreaksTaken = breaksTaken,
+                AutoStart = autoStart
             };
             var settingsJson = JsonConvert.SerializeObject(settings, Formatting.Indented);
             File.WriteAllText(SettingsFilePath, settingsJson);
+        }
+
+        private void SetAutoStart(bool autoStart)
+        {
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(AutoStartRegistryKey, true))
+            {
+                if (autoStart)
+                {
+                    key.SetValue("TwentyTwentyTwentyApp", Application.ExecutablePath);
+                }
+                else
+                {
+                    key.DeleteValue("TwentyTwentyTwentyApp", false);
+                }
+            }
         }
     }
 
@@ -245,6 +268,7 @@ namespace TwentyTwentyTwentyApp
         public string BreakBackgroundImage { get; set; }
         public string BreakSoundFile { get; set; }
         public int BreaksTaken { get; set; }
+        public bool AutoStart { get; set; }
     }
 
     public class SettingsEventArgs : EventArgs
@@ -256,5 +280,6 @@ namespace TwentyTwentyTwentyApp
         public bool NightMode { get; set; }
         public string BreakBackgroundImage { get; set; }
         public string BreakSoundFile { get; set; }
+        public bool AutoStart { get; set; }
     }
 }
