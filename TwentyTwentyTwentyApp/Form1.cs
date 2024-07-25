@@ -28,6 +28,7 @@ namespace TwentyTwentyTwentyApp
         private const string SettingsFilePath = "settings.json";
         private const string AutoStartRegistryKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         private Statistics statistics;
+        private NotifyIcon trayIcon;
 
         public Form1()
         {
@@ -38,6 +39,7 @@ namespace TwentyTwentyTwentyApp
             ApplyTheme();
             SetAutoStart(autoStart);
             UpdateStatistics();
+            InitializeTrayIcon();
         }
 
         private void InitializeBreakTimer()
@@ -280,6 +282,39 @@ namespace TwentyTwentyTwentyApp
                 {
                     key.DeleteValue("TwentyTwentyTwentyApp", false);
                 }
+            }
+        }
+
+        private void InitializeTrayIcon()
+        {
+            trayIcon = new NotifyIcon
+            {
+                Text = "20-20-20 App",
+                Icon = new Icon(SystemIcons.Information, 40, 40),
+                Visible = true
+            };
+
+            trayIcon.DoubleClick += TrayIcon_DoubleClick;
+
+            ContextMenuStrip contextMenu = new ContextMenuStrip();
+            contextMenu.Items.Add("Open", null, (s, e) => Show());
+            contextMenu.Items.Add("Exit", null, (s, e) => Application.Exit());
+
+            trayIcon.ContextMenuStrip = contextMenu;
+        }
+
+        private void TrayIcon_DoubleClick(object sender, EventArgs e)
+        {
+            Show();
+            WindowState = FormWindowState.Normal;
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (WindowState == FormWindowState.Minimized)
+            {
+                Hide();
             }
         }
 
